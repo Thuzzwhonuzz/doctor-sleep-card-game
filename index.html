@@ -123,7 +123,6 @@
         let cardsPlayedThisTurn = 0;
         let firstTurn = true;
         let finalCardUnlocked = false;
-        let finalBattleStarted = false;
 
         const deck = [
             { name: "Abra's Plan", effect: { shine: 5, sanity: 1 }, description: "Abra helps you! Gain 5 Shine Points and 1 Sanity.", image: "abra_plan.jpg", type: "positive", requirement: 0 },
@@ -160,17 +159,24 @@
             }
         }
 
+        function initializeGame() {
+            const gameArea = document.getElementById("game-area");
+            gameArea.innerHTML = "";
+            hand.forEach((card, index) => {
+                const cardElement = document.createElement("div");
+                cardElement.classList.add("card", card.type);
+                cardElement.innerHTML = `<h3>${card.name}</h3><p>${card.description}</p>`;
+                cardElement.onclick = () => playCard(index);
+                gameArea.appendChild(cardElement);
+            });
+        }
+
         function playCard(index) {
             const card = hand[index];
-            if (card.name === "The Overlook Showdown" && !finalBattleStarted) {
-                sanity = 1;
-                updateStatusBars();
-                startFinalBattle();
-                finalBattleStarted = true;
-                return;
-            }
             shinePoints += card.effect.shine;
             sanity += card.effect.sanity;
+            shinePoints = Math.min(shinePoints, maxShinePoints); 
+            sanity = Math.min(sanity, maxSanity); 
             hand.splice(index, 1);
             cardsPlayedThisTurn++;
             initializeGame();
@@ -178,12 +184,18 @@
             checkGameOver();
         }
 
-        function startFinalBattle() {
-            alert("The spinner decides your fate...");
-            setTimeout(() => {
-                const outcome = Math.random() < 0.75 ? "win" : "lose";
-                alert(outcome === "win" ? "You won the final battle!" : "You lost the final battle!");
-            }, 3000);
+        function updateStatusBars() {
+            const shineBar = document.getElementById("shine-bar");
+            const sanityBar = document.getElementById("sanity-bar");
+            shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
+            sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
+        }
+
+        function checkGameOver() {
+            if (shinePoints <= 0 || sanity <= 0) {
+                alert("Game Over! You either ran out of Shine Points or Sanity.");
+                location.reload();
+            }
         }
     </script>
 </body>
