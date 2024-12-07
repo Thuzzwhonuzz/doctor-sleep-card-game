@@ -98,6 +98,44 @@
             background: #fff;
             opacity: 0.5;
         }
+        .spinner-container {
+            margin: 20px auto;
+            width: 150px;
+            height: 150px;
+            position: relative;
+            display: none;
+        }
+        .spinner {
+            width: 100%;
+            height: 100%;
+            border: 8px solid #7d3ff1;
+            border-top: 8px solid #8b0000;
+            border-radius: 50%;
+            animation: spin 2s linear;
+        }
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .spinner-overlay.active {
+            display: flex;
+        }
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
@@ -114,6 +152,9 @@
     </div>
     <button class="btn" id="draw-button" onclick="drawCards()">Draw Cards</button>
     <div id="game-area"></div>
+    <div class="spinner-overlay" id="spinner-overlay">
+        <div class="spinner"></div>
+    </div>
 
     <script>
         let shinePoints = 10;
@@ -131,105 +172,37 @@
             { name: "True Knot Ambush", effect: { shine: -6, sanity: -3 }, description: "The True Knot attacks! Lose 6 Shine Points and 3 Sanity.", image: "true_knot.jpg", type: "negative", requirement: 7 },
             { name: "Azzie's Warning", effect: { shine: 3, sanity: 0 }, description: "Azzie warns you of danger! Gain 3 Shine Points.", image: "azzies_warning.jpg", type: "positive", requirement: 0 },
             { name: "Healing Vision", effect: { shine: 4, sanity: 2 }, description: "A vision brings clarity. Gain 4 Shine Points and 2 Sanity.", image: "healing_vision.jpg", type: "positive", requirement: 0 },
-            { name: "Overlook Flashback", effect: { shine: -5, sanity: -2 }, description: "Memories of the Overlook haunt you. Lose 5 Shine Points and 2 Sanity.", image: "overlook_flashback.jpg", type: "negative", requirement: 5 },
-            { name: "Spirit Aid", effect: { shine: 7, sanity: 1 }, description: "A helpful spirit bolsters your Shine Points. Gain 7 Shine Points and 1 Sanity.", image: "spirit_aid.jpg", type: "positive", requirement: 0 },
-            { name: "Nightmare Visions", effect: { shine: -3, sanity: -4 }, description: "Terrifying visions sap your energy. Lose 3 Shine Points and 4 Sanity.", image: "nightmare_visions.jpg", type: "negative", requirement: 3 }
+            { name: "Spirit Aid", effect: { shine: 7, sanity: 1 }, description: "A helpful spirit bolsters your Shine Points. Gain 7 Shine Points and 1 Sanity.", image: "spirit_aid.jpg", type: "positive", requirement: 0 }
         ];
 
-        const hand = [];
         const finalCard = { name: "The Overlook Showdown", effect: { shine: -15, sanity: -11 }, description: "The final battle! Automatically sets sanity to 1.", image: "overlook_showdown.jpg", type: "negative", requirement: 20 };
-
-        function drawCards() {
-            if (!finalCardUnlocked && hand.some(card => card.type === "negative")) {
-                alert("Unfinished business must be dealt with first. Play all red cards before drawing the final card.");
-                return;
-            }
-
-            if (deck.length === 0 && hand.length === 0 && !finalCardUnlocked) {
-                finalCardUnlocked = true;
-                hand.push(finalCard);
-                initializeGame();
-                return;
-            }
-
-            if (deck.length === 0 && hand.length === 0) {
-                alert("No more cards in the deck.");
-                return;
-            }
-
-            if (firstTurn || cardsPlayedThisTurn >= 2 || hand.length === 0) {
-                for (let i = 0; i < 3 && deck.length > 0; i++) {
-                    const randomIndex = Math.floor(Math.random() * deck.length);
-                    const card = deck.splice(randomIndex, 1)[0];
-                    hand.push(card);
-                }
-                cardsPlayedThisTurn = 0;
-                firstTurn = false;
-                initializeGame();
-            } else {
-                alert("You must play at least 2 cards before drawing more.");
-            }
-        }
-
-        function initializeGame() {
-            const gameArea = document.getElementById("game-area");
-            gameArea.innerHTML = "";
-            hand.forEach((card, index) => {
-                const cardElement = document.createElement("div");
-                cardElement.classList.add("card", card.type);
-                cardElement.innerHTML = `
-                    <img src="${card.image}" alt="${card.name}">
-                    <h3>${card.name}</h3>
-                    <p>${card.description}</p>
-                `;
-                cardElement.onclick = () => playCard(index);
-                gameArea.appendChild(cardElement);
-            });
-        }
+        const hand = [];
 
         function playCard(index) {
             const card = hand[index];
-            if (card.requirement > shinePoints) {
-                alert(`You did not have enough Shine Points to play ${card.name}. You lose!`);
-                location.reload();
-                return;
-            }
             if (card.name === "The Overlook Showdown") {
-                sanity = 1; // Automatically set sanity to 1 during final battle
+                sanity = 1; // Set sanity to 1 for final battle
                 updateStatusBars();
                 startFinalBattle();
                 return;
             }
-            shinePoints += card.effect.shine;
-            sanity += card.effect.sanity;
-            shinePoints = Math.min(shinePoints, maxShinePoints); // Cap Shine Points at the max
-            sanity = Math.min(sanity, maxSanity); // Cap Sanity at the max
-            hand.splice(index, 1);
-            cardsPlayedThisTurn++;
-            initializeGame();
-            updateStatusBars();
-            checkGameOver();
         }
 
         function startFinalBattle() {
-            alert("The final battle begins! Your sanity is now at 1. Prepare for the spinner!");
-            // Spinner mechanics could be added here
+            const overlay = document.getElementById("spinner-overlay");
+            overlay.classList.add("active");
+            setTimeout(() => {
+                overlay.classList.remove("active");
+                const outcome = Math.random() < 0.75 ? "win" : "lose";
+                alert(outcome === "win" ? "You won the final battle!" : "You lost the final battle!");
+            }, 3000);
         }
 
         function updateStatusBars() {
             const shineBar = document.getElementById("shine-bar");
             const sanityBar = document.getElementById("sanity-bar");
-            const status = document.getElementById("status");
             shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
             sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
-            status.innerText = `Shine Points: ${shinePoints} | Sanity: ${sanity}`;
-        }
-
-        function checkGameOver() {
-            if (shinePoints <= 0 || sanity <= 0) {
-                alert("Game Over! You either ran out of Shine Points or Sanity.");
-                location.reload();
-            }
         }
     </script>
 </body>
