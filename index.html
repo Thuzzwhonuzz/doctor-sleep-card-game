@@ -85,20 +85,6 @@
             background: #ff4444;
             transition: width 0.3s ease;
         }
-        .guide-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .guide-button:hover {
-            background-color: #0056b3;
-        }
         .spinner {
             width: 150px;
             height: 150px;
@@ -117,7 +103,6 @@
 </head>
 <body>
     <h1>Doctor Sleep Card Game</h1>
-    <button class="guide-button" onclick="showGuide()">Guide</button>
     <div class="status" id="status">Shine Points: 10 | Sanity: 12</div>
     <div id="shine-bar-container">
         <div id="shine-bar" style="width: 33%;"></div>
@@ -189,6 +174,7 @@
             hand.splice(index, 1);
             cardsPlayedThisTurn++;
             updateStatusBars();
+            initializeGame();
         }
 
         function updateStatusBars() {
@@ -196,10 +182,6 @@
             const sanityBar = document.getElementById("sanity-bar");
             shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
             sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
-        }
-
-        function showGuide() {
-            alert("Guide: Use 2 cards before drawing. Manage Shine and Sanity. Final battle requires The Overlook Showdown.");
         }
 
         function startFinalBattle() {
@@ -210,6 +192,18 @@
                 const outcome = Math.random() < 0.75 ? "win" : "lose";
                 alert(outcome === "win" ? "You beat the game!" : "You lost. Game Over.");
             }, 3000);
+        }
+
+        function initializeGame() {
+            const gameArea = document.getElementById("game-area");
+            gameArea.innerHTML = "";
+            hand.forEach((card, index) => {
+                const cardElement = document.createElement("div");
+                cardElement.classList.add("card", card.type);
+                cardElement.innerHTML = `<h3>${card.name}</h3><p>${card.description}</p>`;
+                cardElement.onclick = () => playCard(index);
+                gameArea.appendChild(cardElement);
+            });
         }
     </script>
 </body>
