@@ -69,20 +69,6 @@
         .btn:hover {
             background-color: #0056b3;
         }
-        .guide-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .guide-button:hover {
-            background-color: #0056b3;
-        }
         #shine-bar-container, #sanity-bar-container {
             position: relative;
             margin: 20px auto;
@@ -113,6 +99,15 @@
             border-top: 8px solid #8b0000;
             display: none;
         }
+        .pointer {
+            width: 10px;
+            height: 30px;
+            background-color: #fff;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(1080deg); }
@@ -121,7 +116,6 @@
 </head>
 <body>
     <h1>Doctor Sleep Card Game</h1>
-    <button class="guide-button" onclick="showGuide()">Guide</button>
     <div class="status" id="status">Shine Points: 10 | Sanity: 12</div>
     <div id="shine-bar-container">
         <div id="shine-bar" style="width: 33%;"></div>
@@ -150,6 +144,13 @@
 
         const finalCard = { name: "The Overlook Showdown", description: "The final battle awaits. Use your shine wisely.", type: "showdown" };
         const hand = [];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
 
         function drawCards() {
             if (deck.length === 0 && !finalCardUnlocked) {
@@ -188,7 +189,7 @@
                 return;
             }
             shinePoints += card.effect.shine;
-            sanity += card.effect.sanity;
+            sanity = Math.max(0, sanity + card.effect.sanity);
             hand.splice(index, 1);
             cardsPlayedThisTurn++;
             updateStatusBars();
@@ -197,14 +198,8 @@
 
         function updateStatusBars() {
             document.getElementById("status").textContent = `Shine Points: ${shinePoints} | Sanity: ${sanity}`;
-            const shineBar = document.getElementById("shine-bar");
-            const sanityBar = document.getElementById("sanity-bar");
-            shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
-            sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
-        }
-
-        function showGuide() {
-            alert("Guide: Use 2 cards before drawing. Shine and Sanity must stay above 0. Final battle is triggered by The Overlook Showdown.");
+            document.getElementById("shine-bar").style.width = `${(shinePoints / maxShinePoints) * 100}%`;
+            document.getElementById("sanity-bar").style.width = `${(sanity / maxSanity) * 100}%`;
         }
 
         function startFinalBattle() {
