@@ -123,26 +123,17 @@
         let cardsPlayedThisTurn = 0;
         let firstTurn = true;
         let finalCardUnlocked = false;
+        let finalBattleStarted = false;
 
         const deck = [
             { name: "Abra's Plan", effect: { shine: 5, sanity: 1 }, description: "Abra helps you! Gain 5 Shine Points and 1 Sanity.", image: "abra_plan.jpg", type: "positive", requirement: 0 },
-            { name: "Battle Room 217 Ghost", effect: { shine: -4, sanity: -2 }, description: "The ghost attacks! Lose 4 Shine Points and 2 Sanity.", image: "room_217.jpg", type: "negative", requirement: 5 },
-            { name: "Dan's Redemption", effect: { shine: 6, sanity: 1 }, description: "Dan redeems himself! Gain 6 Shine Points and 1 Sanity.", image: "dans_redemption.jpg", type: "positive", requirement: 0 },
-            { name: "True Knot Ambush", effect: { shine: -6, sanity: -3 }, description: "The True Knot attacks! Lose 6 Shine Points and 3 Sanity.", image: "true_knot.jpg", type: "negative", requirement: 7 },
-            { name: "Azzie's Warning", effect: { shine: 3, sanity: 0 }, description: "Azzie warns you of danger! Gain 3 Shine Points.", image: "azzies_warning.jpg", type: "positive", requirement: 0 },
-            { name: "Healing Vision", effect: { shine: 4, sanity: 2 }, description: "A vision brings clarity. Gain 4 Shine Points and 2 Sanity.", image: "healing_vision.jpg", type: "positive", requirement: 0 },
-            { name: "Spirit Aid", effect: { shine: 7, sanity: 1 }, description: "A helpful spirit bolsters your Shine Points. Gain 7 Shine Points and 1 Sanity.", image: "spirit_aid.jpg", type: "positive", requirement: 0 }
+            { name: "Battle Room 217 Ghost", effect: { shine: -4, sanity: -2 }, description: "The ghost attacks! Lose 4 Shine Points and 2 Sanity.", image: "room_217.jpg", type: "negative", requirement: 5 }
         ];
 
         const finalCard = { name: "The Overlook Showdown", effect: { shine: -15, sanity: -11 }, description: "The final battle! Automatically sets sanity to 1.", image: "overlook_showdown.jpg", type: "negative", requirement: 20 };
         const hand = [];
 
         function drawCards() {
-            if (!finalCardUnlocked && hand.some(card => card.type === "negative")) {
-                alert("Unfinished business must be dealt with first. Play all red cards before drawing the final card.");
-                return;
-            }
-
             if (deck.length === 0 && hand.length === 0 && !finalCardUnlocked) {
                 finalCardUnlocked = true;
                 hand.push(finalCard);
@@ -151,7 +142,7 @@
             }
 
             if (deck.length === 0 && hand.length === 0) {
-                alert("No more cards in the deck.");
+                alert("Your end draws near...");
                 return;
             }
 
@@ -171,16 +162,15 @@
 
         function playCard(index) {
             const card = hand[index];
-            if (card.name === "The Overlook Showdown") {
-                sanity = 1; // Set sanity to 1 for final battle
+            if (card.name === "The Overlook Showdown" && !finalBattleStarted) {
+                sanity = 1;
                 updateStatusBars();
                 startFinalBattle();
+                finalBattleStarted = true;
                 return;
             }
             shinePoints += card.effect.shine;
             sanity += card.effect.sanity;
-            shinePoints = Math.min(shinePoints, maxShinePoints); // Cap Shine Points at the max
-            sanity = Math.min(sanity, maxSanity); // Cap Sanity at the max
             hand.splice(index, 1);
             cardsPlayedThisTurn++;
             initializeGame();
@@ -189,37 +179,11 @@
         }
 
         function startFinalBattle() {
-            alert("Final battle mechanics here!"); // Placeholder for the spinner functionality
-        }
-
-        function initializeGame() {
-            const gameArea = document.getElementById("game-area");
-            gameArea.innerHTML = "";
-            hand.forEach((card, index) => {
-                const cardElement = document.createElement("div");
-                cardElement.classList.add("card", card.type);
-                cardElement.innerHTML = `
-                    <img src="${card.image}" alt="${card.name}">
-                    <h3>${card.name}</h3>
-                    <p>${card.description}</p>
-                `;
-                cardElement.onclick = () => playCard(index);
-                gameArea.appendChild(cardElement);
-            });
-        }
-
-        function updateStatusBars() {
-            const shineBar = document.getElementById("shine-bar");
-            const sanityBar = document.getElementById("sanity-bar");
-            shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
-            sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
-        }
-
-        function checkGameOver() {
-            if (shinePoints <= 0 || sanity <= 0) {
-                alert("Game Over! You either ran out of Shine Points or Sanity.");
-                location.reload();
-            }
+            alert("The spinner decides your fate...");
+            setTimeout(() => {
+                const outcome = Math.random() < 0.75 ? "win" : "lose";
+                alert(outcome === "win" ? "You won the final battle!" : "You lost the final battle!");
+            }, 3000);
         }
     </script>
 </body>
