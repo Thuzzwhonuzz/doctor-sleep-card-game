@@ -52,6 +52,10 @@
             background: linear-gradient(135deg, #8b0000, #2c0000);
             color: #f4f4f4;
         }
+        .card.showdown {
+            background: #000;
+            color: #fff;
+        }
         .btn {
             margin: 20px;
             padding: 10px 20px;
@@ -63,6 +67,20 @@
             cursor: pointer;
         }
         .btn:hover {
+            background-color: #0056b3;
+        }
+        .guide-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .guide-button:hover {
             background-color: #0056b3;
         }
         #shine-bar-container, #sanity-bar-container {
@@ -103,6 +121,7 @@
 </head>
 <body>
     <h1>Doctor Sleep Card Game</h1>
+    <button class="guide-button" onclick="showGuide()">Guide</button>
     <div class="status" id="status">Shine Points: 10 | Sanity: 12</div>
     <div id="shine-bar-container">
         <div id="shine-bar" style="width: 33%;"></div>
@@ -126,12 +145,10 @@
 
         const deck = [
             { name: "Abra's Plan", effect: { shine: 5, sanity: 1 }, description: "Abra helps you! Gain 5 Shine Points and 1 Sanity.", type: "positive" },
-            { name: "True Knot Ambush", effect: { shine: -6, sanity: -3 }, description: "The True Knot ambushes you! Lose 6 Shine Points and 3 Sanity.", type: "negative" },
-            { name: "Healing Vision", effect: { shine: 4, sanity: 2 }, description: "A vision brings clarity. Gain 4 Shine Points and 2 Sanity.", type: "positive" },
-            { name: "Overlook Flashback", effect: { shine: -5, sanity: -2 }, description: "Flashbacks haunt you! Lose 5 Shine Points and 2 Sanity.", type: "negative" }
+            { name: "True Knot Ambush", effect: { shine: -6, sanity: -3 }, description: "The True Knot ambushes you! Lose 6 Shine Points and 3 Sanity.", type: "negative" }
         ];
 
-        const finalCard = { name: "The Overlook Showdown", description: "The final battle awaits. Use your shine wisely.", type: "negative" };
+        const finalCard = { name: "The Overlook Showdown", description: "The final battle awaits. Use your shine wisely.", type: "showdown" };
         const hand = [];
 
         function drawCards() {
@@ -163,6 +180,13 @@
 
         function playCard(index) {
             const card = hand[index];
+            if (card.name === "The Overlook Showdown" && !finalBattleStarted) {
+                sanity = 1;
+                updateStatusBars();
+                startFinalBattle();
+                finalBattleStarted = true;
+                return;
+            }
             shinePoints += card.effect.shine;
             sanity += card.effect.sanity;
             hand.splice(index, 1);
@@ -172,14 +196,15 @@
         }
 
         function updateStatusBars() {
+            document.getElementById("status").textContent = `Shine Points: ${shinePoints} | Sanity: ${sanity}`;
             const shineBar = document.getElementById("shine-bar");
             const sanityBar = document.getElementById("sanity-bar");
             shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
             sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
-            if (shinePoints <= 0 || sanity <= 0) {
-                alert("You lost. Game Over.");
-                setTimeout(() => location.reload(), 5000);
-            }
+        }
+
+        function showGuide() {
+            alert("Guide: Use 2 cards before drawing. Shine and Sanity must stay above 0. Final battle is triggered by The Overlook Showdown.");
         }
 
         function startFinalBattle() {
