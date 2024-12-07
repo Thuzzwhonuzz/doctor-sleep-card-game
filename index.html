@@ -90,6 +90,14 @@
             background: #ff4444;
             transition: width 0.3s ease;
         }
+        .shine-line, .sanity-line {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 1px;
+            background: #fff;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -112,17 +120,12 @@
         let cardsPlayedThisTurn = 0;
         let firstTurn = true;
         let finalCardUnlocked = false;
+        let finalBattleStarted = false;
 
         const deck = [
             { name: "Abra's Plan", effect: { shine: 5, sanity: 1 }, description: "Abra helps you! Gain 5 Shine Points and 1 Sanity.", type: "positive" },
             { name: "Battle Room 217 Ghost", effect: { shine: -4, sanity: -2 }, description: "The ghost attacks! Lose 4 Shine Points and 2 Sanity.", type: "negative" },
-            { name: "Dan's Redemption", effect: { shine: 6, sanity: 1 }, description: "Dan redeems himself! Gain 6 Shine Points and 1 Sanity.", type: "positive" },
-            { name: "True Knot Ambush", effect: { shine: -6, sanity: -3 }, description: "The True Knot attacks! Lose 6 Shine Points and 3 Sanity.", type: "negative" },
-            { name: "Healing Vision", effect: { shine: 4, sanity: 2 }, description: "A vision brings clarity. Gain 4 Shine Points and 2 Sanity.", type: "positive" },
-            { name: "Spirit Aid", effect: { shine: 7, sanity: 1 }, description: "A helpful spirit bolsters your Shine Points. Gain 7 Shine Points and 1 Sanity.", type: "positive" },
-            { name: "Overlook Flashback", effect: { shine: -5, sanity: -2 }, description: "Memories of the Overlook haunt you. Lose 5 Shine Points and 2 Sanity.", type: "negative" },
-            { name: "Azzie's Warning", effect: { shine: 3, sanity: 0 }, description: "Azzie warns you of danger! Gain 3 Shine Points.", type: "positive" },
-            { name: "Nightmare Visions", effect: { shine: -3, sanity: -4 }, description: "Terrifying visions sap your energy. Lose 3 Shine Points and 4 Sanity.", type: "negative" }
+            { name: "Dan's Redemption", effect: { shine: 6, sanity: 1 }, description: "Dan redeems himself! Gain 6 Shine Points and 1 Sanity.", type: "positive" }
         ];
 
         const finalCard = { name: "The Overlook Showdown", description: "The final battle awaits. Use your shine wisely.", type: "negative" };
@@ -136,7 +139,7 @@
                 return;
             }
 
-            if (deck.length === 0 && hand.length === 0) {
+            if (deck.length === 0 && hand.length === 1 && hand[0].name === "The Overlook Showdown") {
                 alert("Your end draws near...");
                 return;
             }
@@ -157,6 +160,13 @@
 
         function playCard(index) {
             const card = hand[index];
+            if (card.name === "The Overlook Showdown" && !finalBattleStarted) {
+                sanity = 1;
+                updateStatusBars();
+                startFinalBattle();
+                finalBattleStarted = true;
+                return;
+            }
             shinePoints += card.effect.shine;
             sanity += card.effect.sanity;
             hand.splice(index, 1);
@@ -164,6 +174,14 @@
             initializeGame();
             updateStatusBars();
             checkGameOver();
+        }
+
+        function startFinalBattle() {
+            alert("The spinner decides your fate...");
+            setTimeout(() => {
+                const outcome = Math.random() < 0.75 ? "win" : "lose";
+                alert(outcome === "win" ? "You won the final battle!" : "You lost the final battle!");
+            }, 3000);
         }
 
         function initializeGame() {
