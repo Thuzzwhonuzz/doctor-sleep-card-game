@@ -37,13 +37,6 @@
             box-sizing: border-box;
             cursor: pointer;
         }
-        .card h3 {
-            margin: 10px 0;
-            font-size: 1em;
-        }
-        .card p {
-            font-size: 0.9em;
-        }
         .card.positive {
             background: linear-gradient(135deg, #7d3ff1, #5e2dbe);
             color: #fff;
@@ -67,6 +60,20 @@
             cursor: pointer;
         }
         .btn:hover {
+            background-color: #0056b3;
+        }
+        .guide-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .guide-button:hover {
             background-color: #0056b3;
         }
         #shine-bar-container, #sanity-bar-container {
@@ -108,14 +115,11 @@
             left: 50%;
             transform: translateX(-50%);
         }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(1080deg); }
-        }
     </style>
 </head>
 <body>
     <h1>Doctor Sleep Card Game</h1>
+    <button class="guide-button" onclick="showGuide()">Guide</button>
     <div class="status" id="status">Shine Points: 10 | Sanity: 12</div>
     <div id="shine-bar-container">
         <div id="shine-bar" style="width: 33%;"></div>
@@ -166,9 +170,9 @@
             }
 
             if (firstTurn || cardsPlayedThisTurn >= 2) {
+                shuffle(deck);
                 for (let i = 0; i < 3 && deck.length > 0; i++) {
-                    const randomIndex = Math.floor(Math.random() * deck.length);
-                    const card = deck.splice(randomIndex, 1)[0];
+                    const card = deck.shift();
                     hand.push(card);
                 }
                 cardsPlayedThisTurn = 0;
@@ -196,34 +200,8 @@
             initializeGame();
         }
 
-        function updateStatusBars() {
-            document.getElementById("status").textContent = `Shine Points: ${shinePoints} | Sanity: ${sanity}`;
-            document.getElementById("shine-bar").style.width = `${(shinePoints / maxShinePoints) * 100}%`;
-            document.getElementById("sanity-bar").style.width = `${(sanity / maxSanity) * 100}%`;
-        }
-
-        function startFinalBattle() {
-            const spinner = document.getElementById("spinner");
-            spinner.style.display = "block";
-            spinner.style.animation = "spin 4s ease-out";
-            setTimeout(() => {
-                spinner.style.display = "none";
-                const outcome = Math.random() < 0.75 ? "win" : "lose";
-                alert(outcome === "win" ? "You beat the game!" : "You lost. Game Over.");
-                setTimeout(() => location.reload(), 5000);
-            }, 4000);
-        }
-
-        function initializeGame() {
-            const gameArea = document.getElementById("game-area");
-            gameArea.innerHTML = "";
-            hand.forEach((card, index) => {
-                const cardElement = document.createElement("div");
-                cardElement.classList.add("card", card.type);
-                cardElement.innerHTML = `<h3>${card.name}</h3><p>${card.description}</p>`;
-                cardElement.onclick = () => playCard(index);
-                gameArea.appendChild(cardElement);
-            });
+        function showGuide() {
+            alert("Guide: Use 2 cards before drawing. Shine and Sanity must stay above 0. Final battle is triggered by The Overlook Showdown.");
         }
     </script>
 </body>
