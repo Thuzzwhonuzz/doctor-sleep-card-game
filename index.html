@@ -1,0 +1,285 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Sleep Card Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #f4f4f4;
+        }
+        .status {
+            margin: 10px;
+            font-size: 1.2em;
+        }
+        #game-area {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .card {
+            display: inline-block;
+            width: 150px;
+            height: 200px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .card h3 {
+            margin: 10px 0;
+            font-size: 1em;
+        }
+        .card p {
+            font-size: 0.9em;
+        }
+        .card img {
+            max-width: 100%;
+            height: 80px;
+            border-radius: 5px;
+        }
+        .card.positive {
+            background: linear-gradient(135deg, #7d3ff1, #5e2dbe);
+            color: #fff;
+        }
+        .card.negative {
+            background: linear-gradient(135deg, #8b0000, #2c0000);
+            color: #f4f4f4;
+        }
+        .btn {
+            margin: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        #shine-bar-container, #sanity-bar-container {
+            position: relative;
+            margin: 20px auto;
+            width: 80%;
+            background: #444;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        #shine-bar {
+            height: 100%;
+            background: #7d3ff1;
+            transition: width 0.3s ease;
+        }
+        #sanity-bar {
+            height: 100%;
+            background: #ff4444;
+            transition: width 0.3s ease;
+        }
+        .shine-line, .sanity-line {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 1px;
+            background: #fff;
+            opacity: 0.5;
+        }
+        .guide-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .guide-button:hover {
+            background: #555;
+        }
+        .guide-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .guide-overlay p {
+            margin: 10px 0;
+        }
+        .close-guide {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #007bff;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Doctor Sleep Card Game</h1>
+    <button class="guide-button" onclick="showGuide()">Guide</button>
+    <div class="guide-overlay" id="guide-overlay">
+        <h2>Game Guide</h2>
+        <p><strong>Shine Points:</strong> Represent your psychic energy. Use them to activate cards and progress through the game.</p>
+        <p><strong>Sanity:</strong> Reflects your mental stability. Losing all sanity results in game over.</p>
+        <p><strong>Rules:</strong> You must play at least 2 cards before drawing more. Clear all red cards before unlocking the final battle.</p>
+        <button class="close-guide" onclick="hideGuide()">Close</button>
+    </div>
+    <div class="status" id="status">Shine Points: 10 | Sanity: 12</div>
+    <div id="shine-bar-container">
+        <div id="shine-bar" style="width: 33%;"></div>
+        <div class="shine-line" style="left: 33.33%;"></div>
+        <div class="shine-line" style="left: 66.66%;"></div>
+    </div>
+    <div id="sanity-bar-container">
+        <div id="sanity-bar" style="width: 100%;"></div>
+        <div class="sanity-line" style="left: 50%;"></div>
+    </div>
+    <button class="btn" id="draw-button" onclick="drawCards()">Draw Cards</button>
+    <div id="game-area"></div>
+
+    <script>
+        let shinePoints = 10;
+        let sanity = 12;
+        const maxShinePoints = 30;
+        const maxSanity = 12;
+        let cardsPlayedThisTurn = 0;
+        let firstTurn = true;
+        let finalCardUnlocked = false;
+
+        const deck = [
+            { name: "Abra's Plan", effect: { shine: 5, sanity: 1 }, description: "Abra helps you! Gain 5 Shine Points and 1 Sanity.", image: "abra_plan.jpg", type: "positive", requirement: 0 },
+            { name: "Battle Room 217 Ghost", effect: { shine: -4, sanity: -2 }, description: "The ghost attacks! Lose 4 Shine Points and 2 Sanity.", image: "room_217.jpg", type: "negative", requirement: 5 },
+            { name: "Dan's Redemption", effect: { shine: 6, sanity: 1 }, description: "Dan redeems himself! Gain 6 Shine Points and 1 Sanity.", image: "dans_redemption.jpg", type: "positive", requirement: 0 },
+            { name: "True Knot Ambush", effect: { shine: -6, sanity: -3 }, description: "The True Knot attacks! Lose 6 Shine Points and 3 Sanity.", image: "true_knot.jpg", type: "negative", requirement: 7 },
+            { name: "Azzie's Warning", effect: { shine: 3, sanity: 0 }, description: "Azzie warns you of danger! Gain 3 Shine Points.", image: "azzies_warning.jpg", type: "positive", requirement: 0 },
+            { name: "Healing Vision", effect: { shine: 4, sanity: 2 }, description: "A vision brings clarity. Gain 4 Shine Points and 2 Sanity.", image: "healing_vision.jpg", type: "positive", requirement: 0 },
+            { name: "Overlook Flashback", effect: { shine: -5, sanity: -2 }, description: "Memories of the Overlook haunt you. Lose 5 Shine Points and 2 Sanity.", image: "overlook_flashback.jpg", type: "negative", requirement: 5 },
+            { name: "Spirit Aid", effect: { shine: 7, sanity: 1 }, description: "A helpful spirit bolsters your Shine Points. Gain 7 Shine Points and 1 Sanity.", image: "spirit_aid.jpg", type: "positive", requirement: 0 },
+            { name: "Nightmare Visions", effect: { shine: -3, sanity: -4 }, description: "Terrifying visions sap your energy. Lose 3 Shine Points and 4 Sanity.", image: "nightmare_visions.jpg", type: "negative", requirement: 3 }
+        ];
+
+        const hand = [];
+        const finalCard = { name: "The Overlook Showdown", effect: { shine: -15, sanity: -11 }, description: "The final battle! Lose 15 Shine Points and 11 Sanity.", image: "overlook_showdown.jpg", type: "negative", requirement: 20 };
+
+        function drawCards() {
+            if (!finalCardUnlocked && hand.some(card => card.type === "negative")) {
+                alert("Unfinished business must be dealt with first. Play all red cards before drawing the final card.");
+                return;
+            }
+
+            if (deck.length === 0 && hand.length === 0 && !finalCardUnlocked) {
+                finalCardUnlocked = true;
+                hand.push(finalCard);
+                initializeGame();
+                return;
+            }
+
+            if (deck.length === 0 && hand.length === 0) {
+                alert("No more cards in the deck.");
+                return;
+            }
+
+            if (firstTurn || cardsPlayedThisTurn >= 2 || hand.length === 0) {
+                for (let i = 0; i < 3 && deck.length > 0; i++) {
+                    const randomIndex = Math.floor(Math.random() * deck.length);
+                    const card = deck.splice(randomIndex, 1)[0];
+                    hand.push(card);
+                }
+                cardsPlayedThisTurn = 0;
+                firstTurn = false;
+                initializeGame();
+            } else {
+                alert("You must play at least 2 cards before drawing more.");
+            }
+        }
+
+        function initializeGame() {
+            const gameArea = document.getElementById("game-area");
+            gameArea.innerHTML = "";
+            hand.forEach((card, index) => {
+                const cardElement = document.createElement("div");
+                cardElement.classList.add("card", card.type);
+                cardElement.innerHTML = `
+                    <img src="${card.image}" alt="${card.name}">
+                    <h3>${card.name}</h3>
+                    <p>${card.description}</p>
+                `;
+                cardElement.onclick = () => playCard(index);
+                gameArea.appendChild(cardElement);
+            });
+        }
+
+        function playCard(index) {
+            const card = hand[index];
+            if (card.requirement > shinePoints) {
+                alert(`You did not have enough Shine Points to play ${card.name}. You lose!`);
+                location.reload();
+                return;
+            }
+            shinePoints += card.effect.shine;
+            sanity += card.effect.sanity;
+            shinePoints = Math.min(shinePoints, maxShinePoints); // Cap Shine Points at the max
+            sanity = Math.min(sanity, maxSanity); // Cap Sanity at the max
+            hand.splice(index, 1);
+            cardsPlayedThisTurn++;
+            initializeGame();
+            updateStatusBars();
+            if (card.name === "The Overlook Showdown") {
+                startFinalBattle();
+            }
+            checkGameOver();
+        }
+
+        function updateStatusBars() {
+            const shineBar = document.getElementById("shine-bar");
+            const sanityBar = document.getElementById("sanity-bar");
+            const status = document.getElementById("status");
+            shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
+            sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
+            status.innerText = `Shine Points: ${shinePoints} | Sanity: ${sanity}`;
+        }
+
+        function checkGameOver() {
+            if (shinePoints <= 0 || sanity <= 0) {
+                alert("Game Over! You either ran out of Shine Points or Sanity.");
+                location.reload();
+            }
+        }
+
+        function showGuide() {
+            document.getElementById("guide-overlay").style.display = "flex";
+        }
+
+        function hideGuide() {
+            document.getElementById("guide-overlay").style.display = "none";
+        }
+    </script>
+</body>
+</html>
