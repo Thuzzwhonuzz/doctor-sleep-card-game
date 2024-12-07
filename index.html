@@ -98,59 +98,10 @@
             background: #fff;
             opacity: 0.5;
         }
-        .guide-button {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: #444;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .guide-button:hover {
-            background: #555;
-        }
-        .guide-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            z-index: 1000;
-        }
-        .guide-overlay p {
-            margin: 10px 0;
-        }
-        .close-guide {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #007bff;
-            border: none;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
     <h1>Doctor Sleep Card Game</h1>
-    <button class="guide-button" onclick="showGuide()">Guide</button>
-    <div class="guide-overlay" id="guide-overlay">
-        <h2>Game Guide</h2>
-        <p><strong>Shine Points:</strong> Represent your psychic energy. Use them to activate cards and progress through the game.</p>
-        <p><strong>Sanity:</strong> Reflects your mental stability. Losing all sanity results in game over.</p>
-        <p><strong>Rules:</strong> You must play at least 2 cards before drawing more. Clear all red cards before unlocking the final battle.</p>
-        <button class="close-guide" onclick="hideGuide()">Close</button>
-    </div>
     <div class="status" id="status">Shine Points: 10 | Sanity: 12</div>
     <div id="shine-bar-container">
         <div id="shine-bar" style="width: 33%;"></div>
@@ -186,7 +137,7 @@
         ];
 
         const hand = [];
-        const finalCard = { name: "The Overlook Showdown", effect: { shine: -15, sanity: -11 }, description: "The final battle! Lose 15 Shine Points and 11 Sanity.", image: "overlook_showdown.jpg", type: "negative", requirement: 20 };
+        const finalCard = { name: "The Overlook Showdown", effect: { shine: -15, sanity: -11 }, description: "The final battle! Automatically sets sanity to 1.", image: "overlook_showdown.jpg", type: "negative", requirement: 20 };
 
         function drawCards() {
             if (!finalCardUnlocked && hand.some(card => card.type === "negative")) {
@@ -243,6 +194,12 @@
                 location.reload();
                 return;
             }
+            if (card.name === "The Overlook Showdown") {
+                sanity = 1; // Automatically set sanity to 1 during final battle
+                updateStatusBars();
+                startFinalBattle();
+                return;
+            }
             shinePoints += card.effect.shine;
             sanity += card.effect.sanity;
             shinePoints = Math.min(shinePoints, maxShinePoints); // Cap Shine Points at the max
@@ -251,10 +208,12 @@
             cardsPlayedThisTurn++;
             initializeGame();
             updateStatusBars();
-            if (card.name === "The Overlook Showdown") {
-                startFinalBattle();
-            }
             checkGameOver();
+        }
+
+        function startFinalBattle() {
+            alert("The final battle begins! Your sanity is now at 1. Prepare for the spinner!");
+            // Spinner mechanics could be added here
         }
 
         function updateStatusBars() {
@@ -271,14 +230,6 @@
                 alert("Game Over! You either ran out of Shine Points or Sanity.");
                 location.reload();
             }
-        }
-
-        function showGuide() {
-            document.getElementById("guide-overlay").style.display = "flex";
-        }
-
-        function hideGuide() {
-            document.getElementById("guide-overlay").style.display = "none";
         }
     </script>
 </body>
