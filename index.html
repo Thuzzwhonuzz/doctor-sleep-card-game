@@ -90,14 +90,6 @@
             background: #ff4444;
             transition: width 0.3s ease;
         }
-        .shine-line, .sanity-line {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            width: 1px;
-            background: #fff;
-            opacity: 0.5;
-        }
     </style>
 </head>
 <body>
@@ -105,12 +97,9 @@
     <div class="status" id="status">Shine Points: 10 | Sanity: 12</div>
     <div id="shine-bar-container">
         <div id="shine-bar" style="width: 33%;"></div>
-        <div class="shine-line" style="left: 33.33%;"></div>
-        <div class="shine-line" style="left: 66.66%;"></div>
     </div>
     <div id="sanity-bar-container">
         <div id="sanity-bar" style="width: 100%;"></div>
-        <div class="sanity-line" style="left: 50%;"></div>
     </div>
     <button class="btn" id="draw-button" onclick="drawCards()">Draw Cards</button>
     <div id="game-area"></div>
@@ -125,15 +114,22 @@
         let finalCardUnlocked = false;
 
         const deck = [
-            { name: "Abra's Plan", effect: { shine: 5, sanity: 1 }, description: "Abra helps you! Gain 5 Shine Points and 1 Sanity.", image: "abra_plan.jpg", type: "positive", requirement: 0 },
-            { name: "Battle Room 217 Ghost", effect: { shine: -4, sanity: -2 }, description: "The ghost attacks! Lose 4 Shine Points and 2 Sanity.", image: "room_217.jpg", type: "negative", requirement: 5 }
+            { name: "Abra's Plan", effect: { shine: 5, sanity: 1 }, description: "Abra helps you! Gain 5 Shine Points and 1 Sanity.", type: "positive" },
+            { name: "Battle Room 217 Ghost", effect: { shine: -4, sanity: -2 }, description: "The ghost attacks! Lose 4 Shine Points and 2 Sanity.", type: "negative" },
+            { name: "Dan's Redemption", effect: { shine: 6, sanity: 1 }, description: "Dan redeems himself! Gain 6 Shine Points and 1 Sanity.", type: "positive" },
+            { name: "True Knot Ambush", effect: { shine: -6, sanity: -3 }, description: "The True Knot attacks! Lose 6 Shine Points and 3 Sanity.", type: "negative" },
+            { name: "Healing Vision", effect: { shine: 4, sanity: 2 }, description: "A vision brings clarity. Gain 4 Shine Points and 2 Sanity.", type: "positive" },
+            { name: "Spirit Aid", effect: { shine: 7, sanity: 1 }, description: "A helpful spirit bolsters your Shine Points. Gain 7 Shine Points and 1 Sanity.", type: "positive" },
+            { name: "Overlook Flashback", effect: { shine: -5, sanity: -2 }, description: "Memories of the Overlook haunt you. Lose 5 Shine Points and 2 Sanity.", type: "negative" },
+            { name: "Azzie's Warning", effect: { shine: 3, sanity: 0 }, description: "Azzie warns you of danger! Gain 3 Shine Points.", type: "positive" },
+            { name: "Nightmare Visions", effect: { shine: -3, sanity: -4 }, description: "Terrifying visions sap your energy. Lose 3 Shine Points and 4 Sanity.", type: "negative" }
         ];
 
-        const finalCard = { name: "The Overlook Showdown", effect: { shine: -15, sanity: -11 }, description: "The final battle! Automatically sets sanity to 1.", image: "overlook_showdown.jpg", type: "negative", requirement: 20 };
+        const finalCard = { name: "The Overlook Showdown", description: "The final battle awaits. Use your shine wisely.", type: "negative" };
         const hand = [];
 
         function drawCards() {
-            if (deck.length === 0 && hand.length === 0 && !finalCardUnlocked) {
+            if (deck.length === 0 && !finalCardUnlocked) {
                 finalCardUnlocked = true;
                 hand.push(finalCard);
                 initializeGame();
@@ -145,7 +141,7 @@
                 return;
             }
 
-            if (firstTurn || cardsPlayedThisTurn >= 2 || hand.length === 0) {
+            if (firstTurn || cardsPlayedThisTurn >= 2) {
                 for (let i = 0; i < 3 && deck.length > 0; i++) {
                     const randomIndex = Math.floor(Math.random() * deck.length);
                     const card = deck.splice(randomIndex, 1)[0];
@@ -159,6 +155,17 @@
             }
         }
 
+        function playCard(index) {
+            const card = hand[index];
+            shinePoints += card.effect.shine;
+            sanity += card.effect.sanity;
+            hand.splice(index, 1);
+            cardsPlayedThisTurn++;
+            initializeGame();
+            updateStatusBars();
+            checkGameOver();
+        }
+
         function initializeGame() {
             const gameArea = document.getElementById("game-area");
             gameArea.innerHTML = "";
@@ -169,19 +176,6 @@
                 cardElement.onclick = () => playCard(index);
                 gameArea.appendChild(cardElement);
             });
-        }
-
-        function playCard(index) {
-            const card = hand[index];
-            shinePoints += card.effect.shine;
-            sanity += card.effect.sanity;
-            shinePoints = Math.min(shinePoints, maxShinePoints); 
-            sanity = Math.min(sanity, maxSanity); 
-            hand.splice(index, 1);
-            cardsPlayedThisTurn++;
-            initializeGame();
-            updateStatusBars();
-            checkGameOver();
         }
 
         function updateStatusBars() {
