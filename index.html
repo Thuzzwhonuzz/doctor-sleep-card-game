@@ -62,6 +62,20 @@
         .btn:hover {
             background-color: #0056b3;
         }
+        .guide-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .guide-button:hover {
+            background-color: #0056b3;
+        }
         #shine-bar-container, #sanity-bar-container {
             position: relative;
             margin: 20px auto;
@@ -86,6 +100,7 @@
 </head>
 <body>
     <h1>Doctor Sleep Card Game</h1>
+    <button class="guide-button" onclick="showGuide()">Guide</button>
     <div class="status" id="status">Shine Points: 10 | Sanity: 12</div>
     <div id="shine-bar-container">
         <div id="shine-bar" style="width: 33%;"></div>
@@ -108,81 +123,9 @@
         const deck = [
             { name: "Abra's Plan", effect: { shine: 5, sanity: 1 }, description: "Abra helps you! Gain 5 Shine Points and 1 Sanity.", type: "positive" },
             { name: "True Knot Ambush", effect: { shine: -6, sanity: -3 }, description: "The True Knot ambushes you! Lose 6 Shine Points and 3 Sanity.", type: "negative" },
-            { name: "Healing Vision", effect: { shine: 4, sanity: 2 }, description: "A vision brings clarity. Gain 4 Shine Points and 2 Sanity.", type: "positive" },
-            { name: "Overlook Flashback", effect: { shine: -5, sanity: -2 }, description: "Flashbacks haunt you! Lose 5 Shine Points and 2 Sanity.", type: "negative" }
         ];
 
         const finalCard = { name: "The Overlook Showdown", description: "The final battle awaits. Use your shine wisely.", type: "showdown" };
-        const hand = [];
-
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        function drawCards() {
-            if (deck.length === 0 && !finalCardUnlocked) {
-                finalCardUnlocked = true;
-                hand.push(finalCard);
-                initializeGame();
-                return;
-            }
-
-            if (deck.length === 0 && hand.length === 1 && hand[0].name === "The Overlook Showdown") {
-                alert("Your end draws near...");
-                return;
-            }
-
-            if (firstTurn || cardsPlayedThisTurn >= 2) {
-                shuffle(deck);
-                for (let i = 0; i < 3 && deck.length > 0; i++) {
-                    const card = deck.shift();
-                    hand.push(card);
-                }
-                cardsPlayedThisTurn = 0;
-                firstTurn = false;
-                initializeGame();
-            } else {
-                alert("You must play at least 2 cards before drawing more.");
-            }
-        }
-
-        function playCard(index) {
-            const card = hand[index];
-            if (card.name === "The Overlook Showdown") {
-                sanity = 1;
-                updateStatusBars();
-                alert("Final Battle Triggered!");
-                return;
-            }
-            shinePoints += card.effect.shine;
-            sanity = Math.max(0, sanity + card.effect.sanity);
-            hand.splice(index, 1);
-            cardsPlayedThisTurn++;
-            updateStatusBars();
-            initializeGame();
-        }
-
-        function updateStatusBars() {
-            const shineBar = document.getElementById("shine-bar");
-            const sanityBar = document.getElementById("sanity-bar");
-            shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
-            sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
-        }
-
-        function initializeGame() {
-            const gameArea = document.getElementById("game-area");
-            gameArea.innerHTML = "";
-            hand.forEach((card, index) => {
-                const cardElement = document.createElement("div");
-                cardElement.classList.add("card", card.type);
-                cardElement.innerHTML = `<h3>${card.name}</h3><p>${card.description}</p>`;
-                cardElement.onclick = () => playCard(index);
-                gameArea.appendChild(cardElement);
-            });
-        }
     </script>
 </body>
 </html>
