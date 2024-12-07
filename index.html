@@ -90,13 +90,19 @@
             background: #ff4444;
             transition: width 0.3s ease;
         }
-        .shine-line, .sanity-line {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            width: 1px;
-            background: #fff;
-            opacity: 0.5;
+        .spinner {
+            width: 150px;
+            height: 150px;
+            border: 8px solid #7d3ff1;
+            border-top: 8px solid #8b0000;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+            display: none;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -111,6 +117,7 @@
     </div>
     <button class="btn" id="draw-button" onclick="drawCards()">Draw Cards</button>
     <div id="game-area"></div>
+    <div class="spinner" id="spinner"></div>
 
     <script>
         let shinePoints = 10;
@@ -177,10 +184,13 @@
         }
 
         function startFinalBattle() {
-            alert("The spinner decides your fate...");
+            alert("How hard are you willing to fight?");
+            const spinner = document.getElementById("spinner");
+            spinner.style.display = "block";
             setTimeout(() => {
+                spinner.style.display = "none";
                 const outcome = Math.random() < 0.75 ? "win" : "lose";
-                alert(outcome === "win" ? "You won the final battle!" : "You lost the final battle!");
+                alert(outcome === "win" ? "You beat the game!" : "You lost. Game Over.");
             }, 3000);
         }
 
@@ -194,20 +204,6 @@
                 cardElement.onclick = () => playCard(index);
                 gameArea.appendChild(cardElement);
             });
-        }
-
-        function updateStatusBars() {
-            const shineBar = document.getElementById("shine-bar");
-            const sanityBar = document.getElementById("sanity-bar");
-            shineBar.style.width = `${(shinePoints / maxShinePoints) * 100}%`;
-            sanityBar.style.width = `${(sanity / maxSanity) * 100}%`;
-        }
-
-        function checkGameOver() {
-            if (shinePoints <= 0 || sanity <= 0) {
-                alert("Game Over! You either ran out of Shine Points or Sanity.");
-                location.reload();
-            }
         }
     </script>
 </body>
